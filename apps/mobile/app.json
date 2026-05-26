@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Solupães",
+    "slug": "solupaes-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "solupaes",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.solupaes.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "O app precisa da câmera para registrar a fachada dos estabelecimentos visitados.",
+        "NSLocationWhenInUseUsageDescription": "O app usa o GPS para marcar a localização das visitas no mapa do gestor.",
+        "NSPhotoLibraryUsageDescription": "O app pode acessar imagens salvas como fachada do estabelecimento."
+      }
+    },
+    "android": {
+      "package": "br.com.solupaes.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        { "cameraPermission": "O app precisa da câmera para registrar a fachada dos estabelecimentos." }
+      ],
+      [
+        "expo-location",
+        { "locationAlwaysAndWhenInUsePermission": "Permitir Solupães acessar sua localização?" }
+      ],
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

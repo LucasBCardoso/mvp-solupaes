@@ -1,0 +1,27 @@
+{
+  "name": "solupaes",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Solupães — Plataforma de gestão inteligente de informações comerciais em campo (MVP Ouro Pães)",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter=!@solupaes/mobile dev",
+    "dev:api": "pnpm --filter @solupaes/api dev",
+    "dev:web": "pnpm --filter @solupaes/web dev",
+    "dev:mobile": "pnpm --filter @solupaes/mobile start",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @solupaes/api db:migrate",
+    "db:seed": "pnpm --filter @solupaes/api db:seed",
+    "db:studio": "pnpm --filter @solupaes/api db:studio"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.3"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.10",
+    "pnpm": ">=9.0.0"
+  }
+}
