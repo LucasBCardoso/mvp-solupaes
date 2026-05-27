@@ -9,8 +9,11 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 30_000,
-      refetchOnWindowFocus: false,
+      staleTime: 10_000,
+      // Volta ao foco da janela → refetch. Útil pra ver mudanças vindas do mobile.
+      refetchOnWindowFocus: true,
+      // Polling moderado para painel sempre fresco em demo (api é leve, sem custo).
+      refetchInterval: 15_000,
     },
   },
 });

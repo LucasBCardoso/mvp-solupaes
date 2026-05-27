@@ -50,40 +50,105 @@ definiu em `SEED_PASSWORD` no `packages/api/.env`.
 
 ---
 
-## Modo 2 — Rede local (mobile na mesma Wi-Fi)
+## Modo 2 — Rede local (web + mobile conversando em 2 terminais)
 
-Descubra o IP da sua máquina:
+O cenário mais comum em dev: web no navegador + app no celular, ambos consumindo
+a mesma API local. Mudança no mobile → aparece no web em segundos.
+
+### Setup (uma vez por máquina/Wi-Fi)
+
 ```bash
+# 1. Descobre seu IP na rede
 ./scripts/show-ip.sh
-# 192.168.0.42
+# → 192.168.0.42
 ```
 
-### 2.1 — Apontar o mobile para a sua máquina
-
-Edite `apps/mobile/.env`:
+**Edite `apps/mobile/.env`** apontando para o IP da sua máquina:
 ```env
 EXPO_PUBLIC_API_URL=http://192.168.0.42:4000
 ```
-(troque pelo IP que apareceu acima)
 
-### 2.2 — Liberar CORS para o IP
-
-Edite `packages/api/.env` e adicione o IP à lista:
+**Edite `packages/api/.env`** liberando o IP no CORS (necessário se for abrir o web
+também pelo IP em outra máquina; só usando localhost no navegador o default já basta):
 ```env
 CORS_ORIGINS=http://localhost:5173,http://192.168.0.42:5173,http://localhost:8081
 ```
 
-Reinicie `pnpm dev:api`.
+> Firewall do macOS pode bloquear a porta 4000. Vá em *Configurações → Rede →
+> Firewall → Opções* e permita `node`, ou desative o firewall temporariamente.
 
-### 2.3 — Iniciar o app no celular
+### Rodando dia-a-dia (2 terminais)
 
+**Terminal 1 — API + Web:**
+```bash
+pnpm dev
+```
+- API em `http://localhost:4000`
+- Web em `http://localhost:5173`
+
+**Terminal 2 — Mobile (Expo):**
 ```bash
 pnpm dev:mobile
 ```
+QR code aparece. Escaneie com:
+- **Android:** app "Expo Go" (Play Store)
+- **iOS:** câmera nativa (abre o Expo Go automaticamente)
 
-No terminal vai aparecer um QR code. Abra o **Expo Go** no celular e escaneie. O app conecta direto no Postgres da sua máquina.
+### Validando a comunicação bidirecional
 
-> **Importante:** seu firewall do macOS pode bloquear a porta 4000. Vá em *Configurações do Sistema → Rede → Firewall → Opções* e permita `node` ou desative o firewall temporariamente.
+1. **Navegador:** abra `http://localhost:5173` e logue com `gestor@ouropaes.com.br`.
+2. **Celular:** logue no app com `carlos@ouropaes.com.br`.
+3. **No celular:** abra "Nova visita", preencha um estabelecimento, capture GPS e foto,
+   toque em "Salvar e sincronizar".
+4. **No navegador:** volte para a aba — em até ~15 segundos a visita nova aparece em:
+   - *Dashboard* (KPI "Visitas Realizadas" sobe, e card de "Top Oportunidades" se score ≥ 70)
+   - *Visitas* (linha nova no topo da tabela)
+   - *Mapa* (pin novo na cor da classificação)
+   - *Estratégias* (cards novos na coluna "Proposta")
+
+O web está configurado para refetch automático:
+- ao voltar foco para a aba do navegador
+- a cada 15s em segundo plano (polling leve)
+
+Se quiser ver instantâneo, é só dar `F5` ou trocar de aba e voltar.
+
+### Como funciona por dentro
+
+```
+ ┌──────────────────────┐                              ┌──────────────────────┐
+ │  Celular (Expo Go)   │                              │ Navegador (localhost)│
+ │  EXPO_PUBLIC_API_URL │                              │   VITE_API_URL       │
+ │  = 192.168.0.42:4000 │                              │   = localhost:4000   │
+ └─────────┬────────────┘                              └─────────┬────────────┘
+           │ HTTPS / JWT                                         │ HTTPS / JWT
+           │ POST /visits                                        │ GET /dashboard
+           │                                                     │ GET /visits
+           └───────────────────────┬─────────────────────────────┘
+                                   ▼
+                         ┌───────────────────┐
+                         │  API (porta 4000) │
+                         │  Express+Prisma   │
+                         └─────────┬─────────┘
+                                   ▼
+                         ┌───────────────────┐
+                         │  Postgres Docker  │
+                         │  (porta 5432)     │
+                         └───────────────────┘
+```
+
+A API roda em `0.0.0.0:4000`, ou seja, aceita conexões tanto de `localhost:4000`
+(navegador) quanto de `192.168.0.42:4000` (celular). O banco é o mesmo Postgres
+em container Docker — fonte única de verdade.
+
+### Troubleshooting de rede
+
+- **Celular não conecta na API:**
+  - Confirme que celular e máquina estão na **mesma Wi-Fi** (não 4G/5G no celular)
+  - Confirme que o IP em `apps/mobile/.env` é o da sua máquina (e não `localhost`)
+  - Teste no próprio celular: abra o navegador do celular em `http://<seu-ip>:4000/health` — tem que devolver `{"success":true,...}`
+  - macOS: libere o firewall conforme acima
+- **Mudanças no `.env` do mobile não pegam:** o Expo cacheia. No terminal do Expo, pressione `r` (reload) ou Ctrl+C e suba de novo.
+- **`pnpm dev` reclama de porta ocupada:** outro processo está em 4000 ou 5173. Use `lsof -i :4000` para descobrir e mate-o.
 
 ---
 
