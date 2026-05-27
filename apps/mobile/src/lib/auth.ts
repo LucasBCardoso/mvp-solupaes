@@ -1,5 +1,6 @@
 import { apiFetch } from './api';
 import { saveSession, clearSession } from './secureStore';
+import { setAuthed } from './sessionState';
 import type { User } from '@solupaes/shared';
 
 export async function login(email: string, password: string): Promise<User> {
@@ -12,6 +13,7 @@ export async function login(email: string, password: string): Promise<User> {
     },
   );
   await saveSession(data.accessToken, data.refreshToken, data.user);
+  setAuthed(true);
   return data.user;
 }
 
@@ -22,4 +24,5 @@ export async function logout(): Promise<void> {
     /* ignore */
   }
   await clearSession();
+  setAuthed(false);
 }

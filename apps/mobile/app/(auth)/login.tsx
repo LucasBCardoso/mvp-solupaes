@@ -24,7 +24,7 @@ export default function LoginScreen() {
     setError(null);
     try {
       await login(email.trim(), password);
-      router.replace('/(tabs)/');
+      router.replace('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao entrar');
     } finally {
