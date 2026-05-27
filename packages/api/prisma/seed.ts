@@ -5,14 +5,18 @@ import { calculateScore, proposeStrategies } from '@solupaes/shared';
 
 const prisma = new PrismaClient();
 
-const DEMO_PASSWORD = process.env.SEED_PASSWORD;
-if (!DEMO_PASSWORD || DEMO_PASSWORD.length < 8) {
-  console.error(
-    '❌ SEED_PASSWORD não definida em packages/api/.env (mínimo 8 caracteres).\n' +
-      '   Edite packages/api/.env e ajuste a linha SEED_PASSWORD com uma senha de pelo menos 8 caracteres.',
-  );
-  process.exit(1);
+function requireSeedPassword(): string {
+  const value = process.env.SEED_PASSWORD;
+  if (!value || value.length < 8) {
+    console.error(
+      '❌ SEED_PASSWORD não definida em packages/api/.env (mínimo 8 caracteres).\n' +
+        '   Edite packages/api/.env e ajuste a linha SEED_PASSWORD com uma senha de pelo menos 8 caracteres.',
+    );
+    process.exit(1);
+  }
+  return value;
 }
+const DEMO_PASSWORD = requireSeedPassword();
 
 function daysAgo(n: number): Date {
   return new Date(Date.now() - n * 86400000);
